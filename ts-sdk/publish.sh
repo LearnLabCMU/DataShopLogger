@@ -2,7 +2,7 @@
 
 # DataShop Logger TypeScript SDK Publishing Script
 
-echo "📦 Preparing to publish @cmu/datashop-logger..."
+echo "📦 Preparing to publish @learnlab/datashop-logger..."
 
 # Ensure we're in the right directory
 if [ ! -f "package.json" ]; then
@@ -56,4 +56,4 @@ echo "To publish to npm:"
 echo "  1. Make sure you're logged in: npm login"
 echo "  2. Publish the package: npm publish --access public"
 echo ""
-echo "Note: The package name is @cmu/datashop-logger"
+echo "Note: The package name is @learnlab/datashop-logger"

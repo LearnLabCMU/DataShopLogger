@@ -1,5 +1,5 @@
 {
-  "name": "@cmu/datashop-logger",
+  "name": "@learnlab/datashop-logger",
   "version": "1.0.0",
   "description": "TypeScript SDK for logging educational data to Carnegie Mellon's DataShop system",
   "main": "dist/index.js",

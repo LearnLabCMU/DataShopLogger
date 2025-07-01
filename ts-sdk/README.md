@@ -17,19 +17,19 @@ A TypeScript SDK for logging educational data to Carnegie Mellon University's Da
 ## Installation
 
 ```bash
-npm install @cmu/datashop-logger
+npm install @learnlab/datashop-logger
 ```
 
 or
 
 ```bash
-yarn add @cmu/datashop-logger
+yarn add @learnlab/datashop-logger
 ```
 
 ## Quick Start
 
 ```typescript
-import { DataShopLogger } from '@cmu/datashop-logger';
+import { DataShopLogger } from '@learnlab/datashop-logger';
 
 // Initialize the logger
 const logger = new DataShopLogger({
@@ -285,7 +285,7 @@ logger.setLogListener({
 ### Using SAI Builder
 
 ```typescript
-import { SAIBuilder } from '@cmu/datashop-logger';
+import { SAIBuilder } from '@learnlab/datashop-logger';
 
 const builder = new SAIBuilder()
   .setSelection(['cell_A1', 'cell_A2', 'cell_A3'])
@@ -303,7 +303,7 @@ import {
   DataShopLoggerError,
   ConfigurationError,
   NetworkError 
-} from '@cmu/datashop-logger';
+} from '@learnlab/datashop-logger';
 
 try {
   logger.logInterfaceAttempt('button', 'click', 'submit');
@@ -321,7 +321,7 @@ try {
 ### Basic Math Tutor
 
 ```typescript
-import { DataShopLogger } from '@cmu/datashop-logger';
+import { DataShopLogger } from '@learnlab/datashop-logger';
 
 const logger = new DataShopLogger({
   configuration: {
@@ -412,7 +412,7 @@ for (const [index, step] of steps.entries()) {
 ### Advanced Example with Skills and Hierarchical Datasets
 
 ```typescript
-import { DataShopLogger, Skill } from '@cmu/datashop-logger';
+import { DataShopLogger, Skill } from '@learnlab/datashop-logger';
 
 const logger = new DataShopLogger({
   configuration: {
@@ -554,7 +554,7 @@ If you're migrating from the JavaScript DataShopLogger:
    const CTATLoggingLibrary = require('datashoplogger');
    
    // New
-   import { DataShopLogger } from '@cmu/datashop-logger';
+   import { DataShopLogger } from '@learnlab/datashop-logger';
    ```
 
 2. **Constructor**: Update initialization
