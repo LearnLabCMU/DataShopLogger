@@ -1,0 +1,31 @@
+# Source files (only include compiled output)
+src/
+examples/
+tests/
+
+# Configuration files
+tsconfig.json
+tsup.config.ts
+jest.config.js
+.eslintrc.js
+
+# Development files
+*.log
+*.tmp
+.DS_Store
+coverage/
+.nyc_output/
+
+# IDE files
+.vscode/
+.idea/
+
+# Git files
+.git/
+.gitignore
+
+# Documentation source files (keep compiled docs)
+*.md
+!README.md
+!CHANGELOG.md
+!LICENSE
