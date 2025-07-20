@@ -40,7 +40,6 @@ describe('LogMessageBuilder', () => {
       expect(message).toContain('<log_session_start');
       expect(message).toContain('timezone="UTC"');
       expect(message).toContain('date_time="');
-      expect(message).toContain('UTC"');
       expect(message).toContain(`session_id="${config.session_id}"`);
       expect(message).toContain(`user_guid="${config.user_guid}"`);
       expect(message).toContain('info_type="tutor_message.dtd"/>');

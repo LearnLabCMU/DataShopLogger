@@ -29,19 +29,30 @@ export class LogMessageBuilder {
   formatTimeStamp(date: Date): string {
     return date.toISOString().replace('T', ' ').replace('Z', '');
   }
+  
+  formatTimeStampOLI(date: Date): string {
+    // OLI format: YYYY/MM/DD HH:MM:SS
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const hours = String(date.getUTCHours()).padStart(2, '0');
+    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+    const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+    
+    return `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`;
+  }
 
   createLogSessionStart(): string {
-    const timestamp = this.formatTimeStamp(new Date());
+    const now = new Date();
     
-    let message = `${this.xmlProlog}<tutor_related_message_sequence version_number="${this.DTDVersion}">`;
-    message += `<log_session_start>`;
-    message += `<log_action>START_LOG</log_action>`;
-    message += `<date_time>${timestamp} UTC</date_time>`;
-    message += `<timezone>UTC</timezone>`;
-    message += `<session_id>${this.configuration.session_id || ''}</session_id>`;
-    message += `<user_guid>${this.configuration.user_guid || ''}</user_guid>`;
-    message += `</log_session_start>`;
-    message += `</tutor_related_message_sequence>`;
+    // log_session_start is a self-closing element with attributes
+    let message = `${this.xmlProlog}<log_session_start `;
+    message += `timezone="UTC" `;
+    message += `date_time="${this.formatTimeStampOLI(now)}" `;
+    message += `auth_token="${this.configuration.auth_token || ''}" `;
+    message += `session_id="${this.configuration.session_id || ''}" `;
+    message += `user_guid="${this.configuration.user_guid || ''}" `;
+    message += `class_id="" treatment_id="" assignment_id="" info_type="tutor_message.dtd"/>`;
     
     return message;
   }
@@ -243,7 +254,7 @@ export class LogMessageBuilder {
     wrapper += `session_id="${vars.session_id || ''}" `;
     wrapper += `action_id="EVALUATE_QUESTION" `;
     wrapper += `user_guid="" `; // leave blank if not log_session_start
-    wrapper += `date_time="${this.formatTimeStamp(now)}" `;
+    wrapper += `date_time="${this.formatTimeStampOLI(now)}" `;
     wrapper += `timezone="UTC" `;
     wrapper += `source_id="${vars.source_id || 'tutor'}" `;
     wrapper += `external_object_id="${vars.activity_context_guid || ''}" `;
