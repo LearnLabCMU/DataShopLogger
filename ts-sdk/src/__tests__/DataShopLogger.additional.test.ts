@@ -8,7 +8,10 @@ describe('DataShopLogger - Additional Coverage', () => {
   beforeEach(() => {
     // Test fetch fallback when sendBeacon is not available
     delete (global as any).navigator;
-    mockFetch = jest.fn().mockResolvedValue({ ok: true });
+    mockFetch = jest.fn().mockResolvedValue({ 
+      ok: true,
+      text: jest.fn().mockResolvedValue('OK')
+    });
     global.fetch = mockFetch;
     
     const config: LogConfiguration = {
@@ -32,9 +35,9 @@ describe('DataShopLogger - Additional Coverage', () => {
         'https://test.example.com/log',
         expect.objectContaining({
           method: 'POST',
-          body: expect.stringContaining('<tool_message'),
+          body: expect.stringContaining('%3Ctool_message'), // URL-encoded <tool_message
           headers: {
-            'Content-Type': 'application/xml',
+            'Content-Type': 'text/plain',
           },
           keepalive: true,
         })
@@ -74,9 +77,10 @@ describe('DataShopLogger - Additional Coverage', () => {
       logger.start();
       
       const contextMessage = mockFetch.mock.calls[1][1].body;
+      // Check for URL-encoded values
       expect(contextMessage).toContain('custom-user-123');
       expect(contextMessage).toContain('CustomProblem');
-      expect(contextMessage).toContain('Custom context');
+      expect(contextMessage).toContain(encodeURIComponent('Custom context'));
       expect(contextMessage).toContain('CustomDataset');
       
       // Note: School, Period, Instructor, and Description are only included
@@ -92,7 +96,7 @@ describe('DataShopLogger - Additional Coverage', () => {
       expect(updatedContextMessage).toContain('CustomSchool');
       expect(updatedContextMessage).toContain('CustomPeriod');
       expect(updatedContextMessage).toContain('CustomInstructor');
-      expect(updatedContextMessage).toContain('Custom description');
+      expect(updatedContextMessage).toContain(encodeURIComponent('Custom description'));
     });
   });
 
@@ -115,7 +119,7 @@ describe('DataShopLogger - Additional Coverage', () => {
       logger.logInterfaceAttempt('button', 'click', 'submit');
       
       expect(listener).toHaveBeenCalledTimes(1);
-      expect(listener).toHaveBeenCalledWith(expect.stringContaining('<tool_message'));
+      expect(listener).toHaveBeenCalledWith(expect.stringContaining('<?xml')); // Wrapped message starts with XML declaration
     });
   });
 
@@ -137,7 +141,8 @@ describe('DataShopLogger - Additional Coverage', () => {
       );
       
       const message = mockFetch.mock.calls[0][1].body;
-      expect(message).toContain(`transaction_id="${txId}"`);
+      // Check for URL-encoded transaction ID
+      expect(message).toContain(encodeURIComponent(`transaction_id="${txId}"`));
     });
   });
 
@@ -178,8 +183,8 @@ describe('DataShopLogger - Additional Coverage', () => {
       // Should only send context message, not session start
       expect((global.navigator.sendBeacon as jest.Mock)).toHaveBeenCalledTimes(1);
       const message = (global.navigator.sendBeacon as jest.Mock).mock.calls[0][1];
-      expect(message).toContain('<context_message');
-      expect(message).not.toContain('<log_session_start>');
+      expect(message).toContain(encodeURIComponent('<context_message')); // URL-encoded in wrapper
+      expect(message).not.toContain('<log_session_start');
     });
   });
 });

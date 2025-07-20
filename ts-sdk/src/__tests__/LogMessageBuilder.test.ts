@@ -37,14 +37,13 @@ describe('LogMessageBuilder', () => {
     it('should create log session start message', () => {
       const message = builder.createLogSessionStart();
       
-      expect(message).toContain('<log_session_start>');
-      expect(message).toContain('<log_action>START_LOG</log_action>');
-      expect(message).toContain('<date_time>');
-      expect(message).toContain('UTC</date_time>');
-      expect(message).toContain('<timezone>UTC</timezone>');
-      expect(message).toContain(`<session_id>${config.session_id}</session_id>`);
-      expect(message).toContain(`<user_guid>${config.user_guid}</user_guid>`);
-      expect(message).toContain('</log_session_start>');
+      expect(message).toContain('<log_session_start');
+      expect(message).toContain('timezone="UTC"');
+      expect(message).toContain('date_time="');
+      expect(message).toContain('UTC"');
+      expect(message).toContain(`session_id="${config.session_id}"`);
+      expect(message).toContain(`user_guid="${config.user_guid}"`);
+      expect(message).toContain('info_type="tutor_message.dtd"/>');
     });
 
     it('should handle missing session_id and user_guid', () => {
@@ -52,8 +51,8 @@ describe('LogMessageBuilder', () => {
       const minimalBuilder = new LogMessageBuilder(minimalConfig);
       const message = minimalBuilder.createLogSessionStart();
       
-      expect(message).toContain('<session_id></session_id>');
-      expect(message).toContain('<user_guid></user_guid>');
+      expect(message).toContain('session_id=""');
+      expect(message).toContain('user_guid=""');
     });
   });
 
@@ -73,11 +72,11 @@ describe('LogMessageBuilder', () => {
       expect(message).toContain(`<instructor>${config.instructor_name}</instructor>`);
       expect(message).toContain('</class>');
       expect(message).toContain('<dataset>');
-      expect(message).toContain(`<name>${config.dataset_name}</name>`);
+      expect(message).toContain(`<name><![CDATA[${config.dataset_name}]]></name>`);
       expect(message).toContain(`<level type="${config.dataset_level_type1}">`);
       expect(message).toContain('<problem tutorFlag="tutor">');
-      expect(message).toContain(`<name>${config.problem_name}</name>`);
-      expect(message).toContain(`<context>${config.problem_context}</context>`);
+      expect(message).toContain(`<name><![CDATA[${config.problem_name}]]></name>`);
+      expect(message).toContain(`<context><![CDATA[${config.problem_context}]]></context>`);
       expect(message).toContain('</context_message>');
     });
 
@@ -87,7 +86,7 @@ describe('LogMessageBuilder', () => {
       const message = minimalBuilder.createContextMessage();
       
       expect(message).toContain('context_message_id=""');
-      expect(message).toContain('<name>UnassignedDataset</name>');
+      expect(message).toContain('<name><![CDATA[UnassignedDataset]]></name>');
       expect(message).not.toContain('<class>');
       expect(message).not.toContain('<level');
     });
@@ -101,9 +100,9 @@ describe('LogMessageBuilder', () => {
       const message = multiLevelBuilder.createContextMessage();
       
       expect(message).toContain('<level type="Type1">');
-      expect(message).toContain('<name>Level1</name>');
+      expect(message).toContain('<name><![CDATA[Level1]]></name>');
       expect(message).toContain('<level type="Type2">');
-      expect(message).toContain('<name>Level2</name>');
+      expect(message).toContain('<name><![CDATA[Level2]]></name>');
     });
 
     it('should handle class without optional fields', () => {

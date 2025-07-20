@@ -1,8 +1,8 @@
-import type { 
-  IDataShopLogger, 
-  LogConfiguration, 
-  LoggingLibraryOptions, 
-  SAI, 
+import type {
+  IDataShopLogger,
+  LogConfiguration,
+  LoggingLibraryOptions,
+  SAI,
   ActionEvaluation,
   Skill,
   LogAttemptParams,
@@ -28,27 +28,29 @@ import type {
   SetDatasetLevelNameParams,
   SetDatasetLevelTypeParams,
   SetUseSessionLogParams,
-  SetLogListenerParams
-} from './types';
-import { LogMessageBuilder } from './utils/LogMessageBuilder';
-import { generateGUID, generateTransactionID, generateContextMessageID } from './utils/guid';
-import { ConfigurationError, NetworkError } from './errors/DataShopLoggerError';
+  SetLogListenerParams,
+} from "./types";
+import { LogMessageBuilder } from "./utils/LogMessageBuilder";
+import {
+  generateGUID,
+  generateTransactionID,
+  generateContextMessageID,
+} from "./utils/guid";
+import { ConfigurationError, NetworkError } from "./errors/DataShopLoggerError";
 
 export class DataShopLogger implements IDataShopLogger {
   private configuration: LogConfiguration;
-  private logFormat: 'DATASHOP' | 'XAPI' = 'DATASHOP';
+  private logFormat: "DATASHOP" | "XAPI" = "DATASHOP";
   private useSessionLog: boolean = true;
-  private lastTransactionID: string = '';
+  private lastTransactionID: string = "";
   private lastSAI: SAI | null = null;
   private messageBuilder: LogMessageBuilder;
   private logListener?: (message: string) => void;
 
   // Default values
   private readonly defaultConfiguration: Partial<LogConfiguration> = {
-    dataset_name: 'UnassignedDataset',
-    dataset_level_name1: 'UnassignedLevelName',
-    dataset_level_type1: 'UnassignedLevelType',
-    source_id: 'tutor',
+    dataset_name: "UnassignedDataset",
+    source_id: "tutor",
   };
 
   constructor(options?: LoggingLibraryOptions) {
@@ -56,15 +58,15 @@ export class DataShopLogger implements IDataShopLogger {
       ...this.defaultConfiguration,
       ...options?.configuration,
     };
-    
+
     if (options?.logFormat) {
       this.logFormat = options.logFormat;
     }
-    
+
     if (options?.useSessionLog !== undefined) {
       this.useSessionLog = options.useSessionLog;
     }
-    
+
     this.messageBuilder = new LogMessageBuilder(this.configuration);
     this.initializeSession();
   }
@@ -73,11 +75,11 @@ export class DataShopLogger implements IDataShopLogger {
     if (!this.configuration.session_id) {
       this.configuration.session_id = `ctat_session_${generateGUID()}`;
     }
-    
+
     if (!this.configuration.context_message_id) {
       this.configuration.context_message_id = generateContextMessageID();
     }
-    
+
     if (!this.configuration.user_guid) {
       this.configuration.user_guid = generateGUID();
     }
@@ -85,15 +87,15 @@ export class DataShopLogger implements IDataShopLogger {
 
   start(): string {
     this.initializeSession();
-    
+
     if (this.useSessionLog) {
       const sessionStartMessage = this.messageBuilder.createLogSessionStart();
       this.sendMessage(sessionStartMessage);
     }
-    
+
     const contextMessage = this.messageBuilder.createContextMessage();
     this.sendMessage(contextMessage);
-    
+
     return this.configuration.session_id!;
   }
 
@@ -104,16 +106,20 @@ export class DataShopLogger implements IDataShopLogger {
   // Implementation
   reset(paramsOrConfig?: ResetParams | LogConfiguration): void {
     let config: LogConfiguration | undefined;
-    
+
     // Check if using new object-based API
-    if (paramsOrConfig && typeof paramsOrConfig === 'object' && 'configuration' in paramsOrConfig) {
+    if (
+      paramsOrConfig &&
+      typeof paramsOrConfig === "object" &&
+      "configuration" in paramsOrConfig
+    ) {
       config = (paramsOrConfig as ResetParams).configuration;
-    } 
+    }
     // Backward compatibility
     else {
       config = paramsOrConfig as LogConfiguration | undefined;
     }
-    
+
     this.configuration = {
       ...this.defaultConfiguration,
       ...config,
@@ -139,21 +145,28 @@ export class DataShopLogger implements IDataShopLogger {
     customFields?: Record<string, unknown>
   ): string {
     // Check if using new object-based API
-    if (typeof paramsOrSelection === 'object' && !Array.isArray(paramsOrSelection) && 'selection' in paramsOrSelection) {
+    if (
+      typeof paramsOrSelection === "object" &&
+      !Array.isArray(paramsOrSelection) &&
+      "selection" in paramsOrSelection
+    ) {
       const params = paramsOrSelection;
-      const sai: SAI = { 
-        selection: params.selection, 
-        action: params.action, 
-        input: params.input 
+      const sai: SAI = {
+        selection: params.selection,
+        action: params.action,
+        input: params.input,
       };
-      return this.logInterfaceAttemptSAI({ sai, customFields: params.customFields });
-    } 
+      return this.logInterfaceAttemptSAI({
+        sai,
+        customFields: params.customFields,
+      });
+    }
     // Backward compatibility: old positional parameters
     else {
-      const sai: SAI = { 
-        selection: paramsOrSelection, 
-        action: action!, 
-        input: input! 
+      const sai: SAI = {
+        selection: paramsOrSelection,
+        action: action!,
+        input: input!,
       };
       return this.logInterfaceAttemptSAI({ sai, customFields });
     }
@@ -162,7 +175,10 @@ export class DataShopLogger implements IDataShopLogger {
   // New object-based API
   logInterfaceAttemptSAI(params: LogAttemptSAIParams): string;
   // Backward compatibility overload
-  logInterfaceAttemptSAI(sai: SAI, customFields?: Record<string, unknown>): string;
+  logInterfaceAttemptSAI(
+    sai: SAI,
+    customFields?: Record<string, unknown>
+  ): string;
   // Implementation
   logInterfaceAttemptSAI(
     paramsOrSai: LogAttemptSAIParams | SAI,
@@ -170,9 +186,9 @@ export class DataShopLogger implements IDataShopLogger {
   ): string {
     let sai: SAI;
     let fields: Record<string, unknown> | undefined;
-    
+
     // Check if using new object-based API
-    if ('sai' in paramsOrSai) {
+    if ("sai" in paramsOrSai) {
       sai = paramsOrSai.sai;
       fields = paramsOrSai.customFields;
     }
@@ -181,23 +197,26 @@ export class DataShopLogger implements IDataShopLogger {
       sai = paramsOrSai;
       fields = customFields;
     }
-    
+
     const transactionID = generateTransactionID();
     this.lastTransactionID = transactionID;
     this.lastSAI = sai;
-    
+
     this.messageBuilder.resetCustomFields();
     this.messageBuilder.addCustomFields(fields);
-    this.messageBuilder.addCustomField('tool_event_time', this.messageBuilder.formatTimeStamp(new Date()) + ' UTC');
-    
+    this.messageBuilder.addCustomField(
+      "tool_event_time",
+      this.messageBuilder.formatTimeStamp(new Date()) + " UTC"
+    );
+
     const message = this.messageBuilder.createSemanticEventToolMessage(
       sai,
       transactionID,
-      'ATTEMPT',
+      "ATTEMPT",
       undefined,
       undefined
     );
-    
+
     this.sendMessage(message);
     return transactionID;
   }
@@ -220,42 +239,49 @@ export class DataShopLogger implements IDataShopLogger {
   ): string {
     let sai: SAI;
     let fields: Record<string, unknown> | undefined;
-    
+
     // Check if using new object-based API
-    if (typeof paramsOrSelection === 'object' && !Array.isArray(paramsOrSelection) && 'selection' in paramsOrSelection) {
+    if (
+      typeof paramsOrSelection === "object" &&
+      !Array.isArray(paramsOrSelection) &&
+      "selection" in paramsOrSelection
+    ) {
       const params = paramsOrSelection;
-      sai = { 
-        selection: params.selection, 
-        action: params.action, 
-        input: params.input 
+      sai = {
+        selection: params.selection,
+        action: params.action,
+        input: params.input,
       };
       fields = params.customFields;
-    } 
+    }
     // Backward compatibility: old positional parameters
     else {
-      sai = { 
-        selection: paramsOrSelection, 
-        action: action!, 
-        input: input! 
+      sai = {
+        selection: paramsOrSelection,
+        action: action!,
+        input: input!,
       };
       fields = customFields;
     }
-    
+
     const transactionID = generateTransactionID();
     this.lastTransactionID = transactionID;
-    
+
     this.messageBuilder.resetCustomFields();
     this.messageBuilder.addCustomFields(fields);
-    this.messageBuilder.addCustomField('tool_event_time', this.messageBuilder.formatTimeStamp(new Date()) + ' UTC');
-    
+    this.messageBuilder.addCustomField(
+      "tool_event_time",
+      this.messageBuilder.formatTimeStamp(new Date()) + " UTC"
+    );
+
     const message = this.messageBuilder.createSemanticEventToolMessage(
       sai,
       transactionID,
-      'HINT_REQUEST',
+      "HINT_REQUEST",
       undefined,
       undefined
     );
-    
+
     this.sendMessage(message);
     return transactionID;
   }
@@ -285,42 +311,45 @@ export class DataShopLogger implements IDataShopLogger {
     customFields?: Record<string, unknown>
   ): void {
     // Check if using new object-based API
-    if (typeof paramsOrTransactionID === 'object' && 'transactionId' in paramsOrTransactionID) {
+    if (
+      typeof paramsOrTransactionID === "object" &&
+      "transactionId" in paramsOrTransactionID
+    ) {
       const params = paramsOrTransactionID;
       const evaluation: ActionEvaluation = {
-        evaluation: 'HINT',
+        evaluation: "HINT",
         currentHintNumber: params.currentHintNumber,
         totalHintsAvailable: params.totalHintsAvailable,
       };
-      
+
       this.logResponse({
         transactionId: params.transactionId,
         selection: params.selection,
         action: params.action,
         input: params.input,
-        semanticName: 'HINT_MSG',
+        semanticName: "HINT_MSG",
         evaluation,
         advice: params.hintText,
-        customFields: params.customFields
+        customFields: params.customFields,
       });
     }
     // Backward compatibility: old positional parameters
     else {
       const evaluation: ActionEvaluation = {
-        evaluation: 'HINT',
+        evaluation: "HINT",
         currentHintNumber: currentHintNumber!,
         totalHintsAvailable: totalHintsAvailable!,
       };
-      
+
       this.logResponse({
         transactionId: paramsOrTransactionID,
         selection: selection!,
         action: action!,
         input: input!,
-        semanticName: 'HINT_MSG',
+        semanticName: "HINT_MSG",
         evaluation,
         advice: hintText!,
-        customFields
+        customFields,
       });
     }
   }
@@ -352,12 +381,15 @@ export class DataShopLogger implements IDataShopLogger {
     skills?: Skill[]
   ): void {
     // Check if using new object-based API
-    if (typeof paramsOrTransactionID === 'object' && 'transactionId' in paramsOrTransactionID) {
+    if (
+      typeof paramsOrTransactionID === "object" &&
+      "transactionId" in paramsOrTransactionID
+    ) {
       const params = paramsOrTransactionID;
-      const sai: SAI = { 
-        selection: params.selection, 
-        action: params.action, 
-        input: params.input 
+      const sai: SAI = {
+        selection: params.selection,
+        action: params.action,
+        input: params.input,
       };
       this.logResponseSAI({
         transactionId: params.transactionId,
@@ -366,12 +398,16 @@ export class DataShopLogger implements IDataShopLogger {
         evaluation: params.evaluation,
         advice: params.advice,
         customFields: params.customFields,
-        skills: params.skills
+        skills: params.skills,
       });
-    } 
+    }
     // Backward compatibility: old positional parameters
     else {
-      const sai: SAI = { selection: selection!, action: action!, input: input! };
+      const sai: SAI = {
+        selection: selection!,
+        action: action!,
+        input: input!,
+      };
       this.logResponseSAI({
         transactionId: paramsOrTransactionID,
         sai,
@@ -379,7 +415,7 @@ export class DataShopLogger implements IDataShopLogger {
         evaluation: evaluation!,
         advice: advice!,
         customFields,
-        skills
+        skills,
       });
     }
   }
@@ -407,9 +443,12 @@ export class DataShopLogger implements IDataShopLogger {
     skills?: Skill[]
   ): void {
     let actualParams: LogResponseSAIParams;
-    
+
     // Check if using new object-based API
-    if (typeof paramsOrTransactionID === 'object' && 'sai' in paramsOrTransactionID) {
+    if (
+      typeof paramsOrTransactionID === "object" &&
+      "sai" in paramsOrTransactionID
+    ) {
       actualParams = paramsOrTransactionID;
     }
     // Backward compatibility
@@ -421,22 +460,31 @@ export class DataShopLogger implements IDataShopLogger {
         evaluation: evaluation!,
         advice: advice!,
         customFields,
-        skills
+        skills,
       };
     }
-    
-    const evalObj: ActionEvaluation = typeof actualParams.evaluation === 'string' 
-      ? { evaluation: actualParams.evaluation as ActionEvaluation['evaluation'] }
-      : actualParams.evaluation;
-    
+
+    const evalObj: ActionEvaluation =
+      typeof actualParams.evaluation === "string"
+        ? {
+            evaluation:
+              actualParams.evaluation as ActionEvaluation["evaluation"],
+          }
+        : actualParams.evaluation;
+
     this.lastSAI = actualParams.sai;
-    
+
     this.messageBuilder.resetCustomFields();
     this.messageBuilder.addCustomFields(actualParams.customFields);
-    this.messageBuilder.addCustomField('tutor_event_time', this.messageBuilder.formatTimeStamp(new Date()) + ' UTC');
-    
-    const formattedFeedback = actualParams.advice ? `<![CDATA[${actualParams.advice}]]>` : '';
-    
+    this.messageBuilder.addCustomField(
+      "tutor_event_time",
+      this.messageBuilder.formatTimeStamp(new Date()) + " UTC"
+    );
+
+    const formattedFeedback = actualParams.advice
+      ? `<![CDATA[${actualParams.advice}]]>`
+      : "";
+
     const message = this.messageBuilder.createTutorMessage(
       actualParams.sai,
       actualParams.transactionId || this.lastTransactionID,
@@ -446,40 +494,60 @@ export class DataShopLogger implements IDataShopLogger {
       undefined,
       actualParams.skills
     );
-    
+
     this.sendMessage(message);
   }
 
   private sendMessage(message: string): void {
-    if (this.logFormat === 'DATASHOP') {
-      const wrappedMessage = this.messageBuilder.wrapForDataShop(message);
+    if (this.logFormat === "DATASHOP") {
+      let finalMessage: string;
       
-      if (!this.configuration.log_service_url) {
-        throw new ConfigurationError('log_service_url is not configured');
+      // Wrap message for OLI format unless it's a log_session_start message
+      if (message.includes('<log_session_start')) {
+        // log_session_start messages are sent as-is
+        finalMessage = message;
+      } else {
+        // Other messages need to be wrapped in tutor_related_message_sequence and then in log_action
+        const wrappedMessage = this.messageBuilder.wrapForDataShop(message);
+        finalMessage = this.messageBuilder.wrapForOLI(wrappedMessage);
       }
-      
+
+      if (!this.configuration.log_service_url) {
+        throw new ConfigurationError("log_service_url is not configured");
+      }
+
       // Use sendBeacon if available, otherwise fall back to fetch
-      if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
-        navigator.sendBeacon(this.configuration.log_service_url, wrappedMessage);
-      } else if (typeof fetch !== 'undefined') {
+      if (typeof navigator !== "undefined" && navigator.sendBeacon) {
+        navigator.sendBeacon(
+          this.configuration.log_service_url,
+          finalMessage
+        );
+      } else if (typeof fetch !== "undefined") {
         // Non-blocking fetch for Node.js or modern browsers
+        // Use text/plain to match sendBeacon behavior
         fetch(this.configuration.log_service_url, {
-          method: 'POST',
-          body: wrappedMessage,
+          method: "POST",
+          body: finalMessage,
           headers: {
-            'Content-Type': 'application/xml',
+            "Content-Type": "text/plain",
           },
           keepalive: true,
-        }).catch((error) => {
-          console.error('Failed to send log message:', error);
-        });
+        })
+          .then((response) => {
+            response.text().then((body) => {
+              console.log("Response:", response.status, body);
+            });
+          })
+          .catch((error) => {
+            console.error("Failed to send log message:", error);
+          });
       } else {
-        throw new NetworkError('No suitable method for sending log messages');
+        throw new NetworkError("No suitable method for sending log messages");
       }
-      
+
       // Call log listener if registered
       if (this.logListener) {
-        this.logListener(wrappedMessage);
+        this.logListener(finalMessage);
       }
     } else {
       throw new ConfigurationError(`Unsupported log format: ${this.logFormat}`);
@@ -491,7 +559,7 @@ export class DataShopLogger implements IDataShopLogger {
     this.logFormat = params.format;
   }
 
-  getLogFormat(): 'DATASHOP' | 'XAPI' {
+  getLogFormat(): "DATASHOP" | "XAPI" {
     return this.logFormat;
   }
 
@@ -500,11 +568,11 @@ export class DataShopLogger implements IDataShopLogger {
   }
 
   setLoggingURLQA(): void {
-    this.setLoggingURL({ url: 'https://pslc-qa.andrew.cmu.edu/log/server' });
+    this.setLoggingURL({ url: "https://pslc-qa.andrew.cmu.edu/log/server" });
   }
 
   setLoggingURLProduction(): void {
-    this.setLoggingURL({ url: 'https://learnlab.web.cmu.edu/log/server' });
+    this.setLoggingURL({ url: "https://learnlab.web.cmu.edu/log/server" });
   }
 
   setContextName(params: SetContextNameParams): void {
@@ -512,7 +580,7 @@ export class DataShopLogger implements IDataShopLogger {
   }
 
   getContextName(): string {
-    return (this.configuration.context_name || 'START_PROBLEM') as string;
+    return (this.configuration.context_name || "START_PROBLEM") as string;
   }
 
   setContextMessageID(params: SetContextMessageIDParams): void {
@@ -520,7 +588,7 @@ export class DataShopLogger implements IDataShopLogger {
   }
 
   getContextMessageID(): string {
-    return this.configuration.context_message_id || '';
+    return this.configuration.context_message_id || "";
   }
 
   setUserID(params: SetUserIDParams): void {

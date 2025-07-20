@@ -33,13 +33,15 @@ export class LogMessageBuilder {
   createLogSessionStart(): string {
     const timestamp = this.formatTimeStamp(new Date());
     
-    let message = `<log_session_start>`;
+    let message = `${this.xmlProlog}<tutor_related_message_sequence version_number="${this.DTDVersion}">`;
+    message += `<log_session_start>`;
     message += `<log_action>START_LOG</log_action>`;
     message += `<date_time>${timestamp} UTC</date_time>`;
     message += `<timezone>UTC</timezone>`;
     message += `<session_id>${this.configuration.session_id || ''}</session_id>`;
     message += `<user_guid>${this.configuration.user_guid || ''}</user_guid>`;
     message += `</log_session_start>`;
+    message += `</tutor_related_message_sequence>`;
     
     return message;
   }
@@ -52,7 +54,7 @@ export class LogMessageBuilder {
     
     message += this.makeMetaElement(now);
     
-    // Class element
+    // Class element - always include it, even if empty
     if (vars.class_name) {
       message += '<class>';
       message += `<name>${this.escapeXML(vars.class_name)}</name>`;
@@ -65,48 +67,60 @@ export class LogMessageBuilder {
     
     // Dataset element
     message += '<dataset>';
-    message += `<name>${this.escapeXML(vars.dataset_name || 'UnassignedDataset')}</name>`;
+    message += `<name><![CDATA[${vars.dataset_name || 'UnassignedDataset'}]]></name>`;
     
     // Build nested dataset levels
     let levelContent = '';
-    let currentLevel = 1;
-    let hasLevels = false;
+    let levelsFound = 0;
     
     // Check for all dataset levels (1-10 should be enough)
-    while (currentLevel <= 10) {
-      const levelNameKey = `dataset_level_name${currentLevel}`;
-      const levelTypeKey = `dataset_level_type${currentLevel}`;
+    for (let i = 1; i <= 10; i++) {
+      const levelNameKey = `dataset_level_name${i}`;
+      const levelTypeKey = `dataset_level_type${i}`;
       const levelName = vars[levelNameKey];
       const levelType = vars[levelTypeKey];
       
       if (levelName && levelType) {
-        hasLevels = true;
+        levelsFound++;
         levelContent += `<level type="${this.escapeXML(String(levelType))}">`;
-        levelContent += `<name>${this.escapeXML(String(levelName))}</name>`;
-        currentLevel++;
+        levelContent += `<name><![CDATA[${String(levelName)}]]></name>`;
       } else {
         break;
       }
     }
     
     // Add problem element at the deepest level
-    if (hasLevels) {
+    if (levelsFound > 0) {
       levelContent += '<problem tutorFlag="tutor">';
-      levelContent += `<name>${this.escapeXML(vars.problem_name || '')}</name>`;
+      levelContent += `<name><![CDATA[${vars.problem_name || ''}]]></name>`;
       if (vars.problem_context) {
-        levelContent += `<context>${this.escapeXML(vars.problem_context)}</context>`;
+        levelContent += `<context><![CDATA[${vars.problem_context}]]></context>`;
       }
       levelContent += '</problem>';
       
-      // Close all level tags
-      for (let i = currentLevel - 2; i >= 1; i--) {
+      // Close all level tags in reverse order
+      for (let i = 0; i < levelsFound; i++) {
         levelContent += '</level>';
       }
       
       message += levelContent;
+    } else {
+      // If no dataset levels defined, add problem directly under dataset
+      message += '<problem tutorFlag="tutor">';
+      message += `<name><![CDATA[${vars.problem_name || ''}]]></name>`;
+      if (vars.problem_context) {
+        message += `<context><![CDATA[${vars.problem_context}]]></context>`;
+      }
+      message += '</problem>';
     }
     
     message += '</dataset>';
+    
+    // Condition section (currently empty, but included for compatibility)
+    // In the future, this could support condition configurations
+    
+    // Custom fields (currently empty for context messages)
+    
     message += '</context_message>';
     
     return message;
@@ -210,7 +224,34 @@ export class LogMessageBuilder {
   }
 
   wrapForDataShop(message: string): string {
+    // log_session_start messages should already have the wrapper from createLogSessionStart
+    if (message.includes('<log_session_start')) {
+      return message;
+    }
     return `${this.xmlProlog}<tutor_related_message_sequence version_number="${this.DTDVersion}">${message}</tutor_related_message_sequence>`;
+  }
+  
+  wrapForOLI(message: string): string {
+    const now = new Date();
+    const vars = this.configuration;
+    
+    // URL encode the inner message
+    const encodedMessage = encodeURIComponent(message);
+    
+    let wrapper = `${this.xmlProlog}<log_action `;
+    wrapper += `auth_token="${encodeURIComponent(vars.auth_token || '')}" `;
+    wrapper += `session_id="${vars.session_id || ''}" `;
+    wrapper += `action_id="EVALUATE_QUESTION" `;
+    wrapper += `user_guid="" `; // leave blank if not log_session_start
+    wrapper += `date_time="${this.formatTimeStamp(now)}" `;
+    wrapper += `timezone="UTC" `;
+    wrapper += `source_id="${vars.source_id || 'tutor'}" `;
+    wrapper += `external_object_id="${vars.activity_context_guid || ''}" `;
+    wrapper += `info_type="tutor_message.dtd">`;
+    wrapper += encodedMessage;
+    wrapper += `</log_action>`;
+    
+    return wrapper;
   }
 
   private makeMetaElement(timestamp: Date): string {

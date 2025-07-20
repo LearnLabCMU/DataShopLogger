@@ -54,11 +54,12 @@ describe('DataShopLogger', () => {
       expect(mockSendBeacon).toHaveBeenCalledTimes(2);
       
       const sessionStartCall = mockSendBeacon.mock.calls[0];
-      expect(sessionStartCall[1]).toContain('<log_session_start>');
-      expect(sessionStartCall[1]).toContain('START_LOG');
+      expect(sessionStartCall[1]).toContain('<log_session_start');
+      expect(sessionStartCall[1]).toContain('info_type="tutor_message.dtd"/>');
       
       const contextCall = mockSendBeacon.mock.calls[1];
-      expect(contextCall[1]).toContain('<context_message');
+      // Context messages are wrapped and URL-encoded
+      expect(contextCall[1]).toContain(encodeURIComponent('<context_message'));
       expect(contextCall[1]).toContain('START_PROBLEM');
     });
   });
@@ -71,23 +72,25 @@ describe('DataShopLogger', () => {
       expect(mockSendBeacon).toHaveBeenCalledTimes(1);
       
       const message = mockSendBeacon.mock.calls[0][1];
-      expect(message).toContain('<tool_message');
-      expect(message).toContain('<semantic_event');
-      expect(message).toContain('name="ATTEMPT"');
-      expect(message).toContain('<selection>button1</selection>');
-      expect(message).toContain('<action>click</action>');
-      expect(message).toContain('<input><![CDATA[submit]]></input>');
+      // Tool messages are wrapped and URL-encoded
+      expect(message).toContain(encodeURIComponent('<tool_message'));
+      expect(message).toContain(encodeURIComponent('<semantic_event'));
+      expect(message).toContain(encodeURIComponent('name="ATTEMPT"'));
+      expect(message).toContain(encodeURIComponent('<selection>button1</selection>'));
+      expect(message).toContain(encodeURIComponent('<action>click</action>'));
+      expect(message).toContain(encodeURIComponent('<input><![CDATA[submit]]></input>'));
     });
 
     it('should handle array inputs', () => {
       logger.logInterfaceAttempt(['btn1', 'btn2'], ['click', 'hover'], ['val1', 'val2']);
       
       const message = mockSendBeacon.mock.calls[0][1];
-      expect(message).toContain('<selection>btn1</selection>');
-      expect(message).toContain('<selection>btn2</selection>');
-      expect(message).toContain('<action>click</action><action>hover</action>');
-      expect(message).toContain('<input><![CDATA[val1]]></input>');
-      expect(message).toContain('<input><![CDATA[val2]]></input>');
+      expect(message).toContain(encodeURIComponent('<selection>btn1</selection>'));
+      expect(message).toContain(encodeURIComponent('<selection>btn2</selection>'));
+      expect(message).toContain(encodeURIComponent('<action>click</action>'));
+      expect(message).toContain(encodeURIComponent('<action>hover</action>'));
+      expect(message).toContain(encodeURIComponent('<input><![CDATA[val1]]></input>'));
+      expect(message).toContain(encodeURIComponent('<input><![CDATA[val2]]></input>'));
     });
 
     it('should include custom fields', () => {
@@ -97,8 +100,8 @@ describe('DataShopLogger', () => {
       });
       
       const message = mockSendBeacon.mock.calls[0][1];
-      expect(message).toContain('<custom_field><name>customField1</name><value>value1</value></custom_field>');
-      expect(message).toContain('<custom_field><name>customField2</name><value>123</value></custom_field>');
+      expect(message).toContain(encodeURIComponent('<custom_field><name>customField1</name><value>value1</value></custom_field>'));
+      expect(message).toContain(encodeURIComponent('<custom_field><name>customField2</name><value>123</value></custom_field>'));
     });
   });
 
@@ -114,9 +117,9 @@ describe('DataShopLogger', () => {
       expect(transactionId).toMatch(/^T[0-9a-f-]+$/);
       
       const message = mockSendBeacon.mock.calls[0][1];
-      expect(message).toContain('<selection>input1</selection>');
-      expect(message).toContain('<action>setValue</action>');
-      expect(message).toContain('<input><![CDATA[42]]></input>');
+      expect(message).toContain(encodeURIComponent('<selection>input1</selection>'));
+      expect(message).toContain(encodeURIComponent('<action>setValue</action>'));
+      expect(message).toContain(encodeURIComponent('<input><![CDATA[42]]></input>'));
     });
   });
 
@@ -127,8 +130,8 @@ describe('DataShopLogger', () => {
       expect(transactionId).toMatch(/^T[0-9a-f-]+$/);
       
       const message = mockSendBeacon.mock.calls[0][1];
-      expect(message).toContain('name="HINT_REQUEST"');
-      expect(message).toContain('<selection>hintButton</selection>');
+      expect(message).toContain(encodeURIComponent('name="HINT_REQUEST"'));
+      expect(message).toContain(encodeURIComponent('<selection>hintButton</selection>'));
     });
   });
 
@@ -146,12 +149,12 @@ describe('DataShopLogger', () => {
       );
       
       const message = mockSendBeacon.mock.calls[0][1];
-      expect(message).toContain('<tutor_message');
-      expect(message).toContain('name="HINT_MSG"');
-      expect(message).toContain('HINT');
-      expect(message).toContain('current_hint_number="1"');
-      expect(message).toContain('total_hints_available="3"');
-      expect(message).toContain('Try clicking the submit button');
+      expect(message).toContain(encodeURIComponent('<tutor_message'));
+      expect(message).toContain(encodeURIComponent('name="HINT_MSG"'));
+      expect(message).toContain(encodeURIComponent('HINT'));
+      expect(message).toContain(encodeURIComponent('current_hint_number="1"'));
+      expect(message).toContain(encodeURIComponent('total_hints_available="3"'));
+      expect(message).toContain(encodeURIComponent('Try clicking the submit button'));
     });
   });
 
@@ -170,11 +173,11 @@ describe('DataShopLogger', () => {
       );
       
       const message = mockSendBeacon.mock.calls[0][1];
-      expect(message).toContain('<tutor_message');
-      expect(message).toContain('name="RESULT"');
-      expect(message).toContain('<action_evaluation>CORRECT');
-      expect(message).toContain('Great job!');
-      expect(message).toContain('<name>skill</name><value>addition</value>');
+      expect(message).toContain(encodeURIComponent('<tutor_message'));
+      expect(message).toContain(encodeURIComponent('name="RESULT"'));
+      expect(message).toContain(encodeURIComponent('<action_evaluation>CORRECT'));
+      expect(message).toContain(encodeURIComponent('Great job!'));
+      expect(message).toContain(encodeURIComponent('<custom_field><name>skill</name><value>addition</value></custom_field>'));
     });
 
     it('should handle ActionEvaluation object', () => {
@@ -194,8 +197,8 @@ describe('DataShopLogger', () => {
       );
       
       const message = mockSendBeacon.mock.calls[0][1];
-      expect(message).toContain('INCORRECT');
-      expect(message).toContain('classification="arithmetic-error"');
+      expect(message).toContain(encodeURIComponent('INCORRECT'));
+      expect(message).toContain(encodeURIComponent('classification="arithmetic-error"'));
     });
   });
 
@@ -279,9 +282,9 @@ describe('DataShopLogger', () => {
       );
       
       const message = mockSendBeacon.mock.calls[0][1];
-      expect(message).toContain('button&amp;&lt;&gt;&quot;&apos;');
-      expect(message).not.toContain('button&<>"\'');
-      expect(message).toContain('<![CDATA[value with <tags> & "quotes"]]>');
+      expect(message).toContain(encodeURIComponent('button&amp;&lt;&gt;&quot;&apos;'));
+      expect(message).not.toContain(encodeURIComponent('button&<>"\''));
+      expect(message).toContain(encodeURIComponent('<![CDATA[value with <tags> & "quotes"]]>'));
     });
   });
 
@@ -306,9 +309,8 @@ describe('DataShopLogger', () => {
       logger.logInterfaceAttempt('button1', 'click', 'submit');
       
       expect(loggedMessages).toHaveLength(1);
-      expect(loggedMessages[0]).toContain('<?xml version="1.0" encoding="UTF-8"?>');
-      expect(loggedMessages[0]).toContain('<tutor_related_message_sequence');
-      expect(loggedMessages[0]).toContain('<tool_message');
+      expect(loggedMessages[0]).toContain('<?xml version="1.0" encoding="UTF-8"?><log_action');
+      expect(loggedMessages[0]).toContain(encodeURIComponent('<tutor_related_message_sequence'));
     });
   });
 });
