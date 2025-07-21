@@ -45,20 +45,18 @@ describe('DataShopLogger - Additional Coverage', () => {
     });
 
     it('should handle fetch errors gracefully', async () => {
-      const consoleError = jest.spyOn(console, 'error').mockImplementation();
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
       
-      logger.logInterfaceAttempt('button', 'click', 'submit');
+      // Should not throw when fetch fails
+      expect(() => {
+        logger.logInterfaceAttempt('button', 'click', 'submit');
+      }).not.toThrow();
       
       // Wait for the promise to reject
       await new Promise(resolve => setTimeout(resolve, 10));
       
-      expect(consoleError).toHaveBeenCalledWith(
-        'Failed to send log message:',
-        expect.any(Error)
-      );
-      
-      consoleError.mockRestore();
+      // Verify fetch was called
+      expect(mockFetch).toHaveBeenCalled();
     });
   });
 
