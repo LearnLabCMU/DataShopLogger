@@ -8,8 +8,9 @@ import { DataShopLogger } from "../src";
 // Test the new API with production server
 const logger = new DataShopLogger({
   configuration: {
-    log_service_url: "https://pslcdatashop.web.cmu.edu/log/server",
-    dataset_name: "eason-test-20250720",
+    // log_service_url: "https://pslcdatashop.web.cmu.edu/log/server",
+    log_service_url: "https://pslc-qa.andrew.cmu.edu/log/server",
+    dataset_name: "eason-test-0720",
     problem_name: "Final_API_Test_" + Date.now(),
   },
 });
