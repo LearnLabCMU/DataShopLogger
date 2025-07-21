@@ -13,6 +13,7 @@ A TypeScript SDK for logging educational data to Carnegie Mellon University's Da
 - 🎯 **Knowledge Component Support**: Track learning objectives with Skills/KC
 - 📊 **Hierarchical Datasets**: Support for multiple dataset levels
 - ⚙️ **Full Feature Parity**: All features from JavaScript version included
+- 🔄 **Session Persistence**: Resume sessions across page refreshes/route changes
 
 ## Installation
 
@@ -543,6 +544,73 @@ logger.logResponse({
   skills: skills
 });
 ```
+
+## Session Persistence
+
+For single-page applications (SPAs) or when handling page refreshes, you can persist and resume sessions to maintain logging continuity:
+
+### Basic Session Persistence
+
+```typescript
+// Save session data before page unload or route change
+const sessionData = {
+  sessionId: logger.getSessionId(),
+  userGuid: logger.getUserGuid(),
+  contextMessageId: logger.getContextMessageId()
+};
+localStorage.setItem('datashop_session', JSON.stringify(sessionData));
+
+// On page load or route change, check for existing session
+const savedSession = localStorage.getItem('datashop_session');
+if (savedSession) {
+  const { sessionId } = JSON.parse(savedSession);
+  logger.resume(sessionId); // Resumes without sending duplicate log_session_start
+} else {
+  const sessionId = logger.start(); // Start new session
+  // Save the new session data...
+}
+```
+
+### React Hook Example
+
+```typescript
+import { useEffect, useRef } from 'react';
+import { DataShopLogger } from '@learnlab/datashop-logger';
+
+export function useDataShopLogger(config: LogConfiguration) {
+  const loggerRef = useRef<DataShopLogger | null>(null);
+  
+  useEffect(() => {
+    if (!loggerRef.current) {
+      loggerRef.current = new DataShopLogger({ configuration: config });
+      
+      // Check for existing session
+      const savedSession = localStorage.getItem('datashop_session');
+      if (savedSession) {
+        const { sessionId } = JSON.parse(savedSession);
+        loggerRef.current.resume(sessionId);
+      } else {
+        const sessionId = loggerRef.current.start();
+        localStorage.setItem('datashop_session', JSON.stringify({
+          sessionId,
+          userGuid: loggerRef.current.getUserGuid(),
+          contextMessageId: loggerRef.current.getContextMessageId()
+        }));
+      }
+    }
+  }, []);
+  
+  return loggerRef.current;
+}
+```
+
+### Key Methods for Session Management
+
+- `start()`: Starts a new session and sends log_session_start message
+- `resume(sessionId)`: Resumes an existing session without sending log_session_start
+- `getSessionId()`: Returns the current session ID
+- `getUserGuid()`: Returns the current user GUID
+- `getContextMessageId()`: Returns the current context message ID
 
 ## Migration from JavaScript Version
 

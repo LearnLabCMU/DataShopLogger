@@ -99,6 +99,15 @@ export class DataShopLogger implements IDataShopLogger {
     return this.configuration.session_id!;
   }
 
+  resume(sessionId: string): void {
+    // Resume an existing session without sending log_session_start
+    this.configuration.session_id = sessionId;
+    
+    // Only send context message when resuming
+    const contextMessage = this.messageBuilder.createContextMessage();
+    this.sendMessage(contextMessage);
+  }
+
   // New object-based API
   reset(params: ResetParams): void;
   // Backward compatibility overload
@@ -641,6 +650,18 @@ export class DataShopLogger implements IDataShopLogger {
 
   getLastSAI(): SAI | null {
     return this.lastSAI;
+  }
+
+  getSessionId(): string | undefined {
+    return this.configuration.session_id;
+  }
+
+  getUserGuid(): string | undefined {
+    return this.configuration.user_guid;
+  }
+
+  getContextMessageId(): string | undefined {
+    return this.configuration.context_message_id;
   }
 
   endSession(): void {

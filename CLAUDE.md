@@ -139,6 +139,10 @@ The TypeScript SDK includes all features from the JavaScript version plus:
 ### Additional Methods
 - `setUseSessionLog(boolean)` - Enable/disable session log messages
 - `getLastSAI()` - Get the last logged SAI object
+- `resume(sessionId)` - Resume an existing session without sending log_session_start
+- `getSessionId()` - Get current session ID for persistence
+- `getUserGuid()` - Get current user GUID
+- `getContextMessageId()` - Get current context message ID
 - All setter methods from JavaScript version are included
 
 ### XML Format Compliance

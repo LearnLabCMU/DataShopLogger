@@ -210,6 +210,7 @@ export interface LoggingLibraryOptions {
 export interface IDataShopLogger {
   // Core methods
   start(): string;
+  resume(sessionId: string): void;
   reset(params: ResetParams): void;
   endSession(): void;
   
@@ -244,6 +245,9 @@ export interface IDataShopLogger {
   setDatasetLevelType(params: SetDatasetLevelTypeParams): void;
   setUseSessionLog(params: SetUseSessionLogParams): void;
   getLastSAI(): SAI | null;
+  getSessionId(): string | undefined;
+  getUserGuid(): string | undefined;
+  getContextMessageId(): string | undefined;
   setLogListener(params: SetLogListenerParams): void;
   
   // Deprecated methods (for backward compatibility)
