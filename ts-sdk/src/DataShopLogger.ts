@@ -541,15 +541,9 @@ export class DataShopLogger implements IDataShopLogger {
             "Content-Type": "text/plain",
           },
           keepalive: true,
-        })
-          .then((response) => {
-            response.text().then((body) => {
-              console.log("Response:", response.status, body);
-            });
-          })
-          .catch((error) => {
-            console.error("Failed to send log message:", error);
-          });
+        }).catch(() => {
+          // Silently fail - DataShop logging should not break the application
+        });
       } else {
         throw new NetworkError("No suitable method for sending log messages");
       }

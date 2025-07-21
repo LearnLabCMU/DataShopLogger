@@ -1,6 +1,11 @@
 export function generateGUID(): string {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID();
+  // Check for crypto.randomUUID in both global and globalThis contexts
+  const cryptoObj = (typeof globalThis !== 'undefined' && globalThis.crypto) || 
+                    (typeof global !== 'undefined' && global.crypto) ||
+                    (typeof window !== 'undefined' && window.crypto);
+  
+  if (cryptoObj && cryptoObj.randomUUID) {
+    return cryptoObj.randomUUID();
   }
   
   // Fallback for environments without crypto.randomUUID

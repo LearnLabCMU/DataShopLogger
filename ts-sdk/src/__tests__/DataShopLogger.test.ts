@@ -8,8 +8,14 @@ describe('DataShopLogger', () => {
 
   beforeEach(() => {
     loggedMessages = [];
-    mockSendBeacon = jest.fn();
-    global.navigator = { sendBeacon: mockSendBeacon } as any;
+    mockSendBeacon = jest.fn().mockReturnValue(true);
+    
+    // Override the global navigator.sendBeacon for this test
+    Object.defineProperty(global.navigator, 'sendBeacon', {
+      value: mockSendBeacon,
+      writable: true,
+      configurable: true,
+    });
     
     const config: LogConfiguration = {
       log_service_url: 'https://test.example.com/log',
