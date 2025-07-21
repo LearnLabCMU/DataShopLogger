@@ -122,6 +122,14 @@ Both implementations generate XML messages conforming to DataShop's DTD v4 speci
 4. Follow existing code style and patterns
 5. Update documentation when adding new features
 
+## Commit Message Guidelines
+
+When creating commits:
+- Write clear, concise commit messages that describe what changed and why
+- Focus on the changes rather than who made them
+- Use conventional commit format when appropriate (feat:, fix:, docs:, etc.)
+- Do not include co-author attributions in commit messages
+
 ## TypeScript SDK Features
 
 The TypeScript SDK includes all features from the JavaScript version plus:
