@@ -1,0 +1,67 @@
+{
+  "name": "@learnlab/datashop-logger-react",
+  "version": "1.0.0",
+  "description": "React SDK for DataShop Logger with hooks and context support",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "build:tsup": "tsup",
+    "dev": "rollup -c --watch",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.tsx"
+  },
+  "keywords": [
+    "datashop",
+    "logger",
+    "cmu",
+    "education",
+    "analytics",
+    "react",
+    "hooks"
+  ],
+  "author": "Carnegie Mellon University",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CMU/datashop-logger-ts"
+  },
+  "dependencies": {
+    "@learnlab/datashop-logger": "^1.0.0"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.6",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-typescript": "^12.1.4",
+    "@types/react": "^18.2.73",
+    "@types/react-dom": "^18.2.23",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "rollup": "^4.45.1",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
+    "tslib": "^2.8.1",
+    "tsup": "^8.0.2",
+    "typescript": "^5.4.3"
+  }
+}

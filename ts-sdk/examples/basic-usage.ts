@@ -12,12 +12,14 @@ const logger = new DataShopLogger({
     log_service_url: "https://pslc-qa.andrew.cmu.edu/log/server",
 
     // Dataset information
-    dataset_name: "eason-test-20250720",
-    dataset_level_name1: "Module1",
-    dataset_level_type1: "Module",
+    dataset_name: "eason-test-0720",
+    dataset_level_name1: "SDK_Type",
+    dataset_level_type1: "sdk_type",
+    dataset_level_name2: "TypeScript_SDK",
+    dataset_level_type2: "section",
 
     // Problem information
-    problem_name: "SimpleAddition",
+    problem_name: "TypeScript_SDK_SimpleAddition",
     problem_context: "Learning basic addition with single digits",
 
     // Class information (optional)
@@ -26,7 +28,10 @@ const logger = new DataShopLogger({
     instructor_name: "Demo Teacher",
 
     // User will be auto-generated if not provided
-    // user_guid: 'demo-user-123'
+    // user_guid: 'typescript-sdk-user-' + Date.now(),
+    
+    // Custom session ID for TypeScript SDK
+    session_id: `typescript_session_${crypto.randomUUID ? crypto.randomUUID() : Date.now() + '_' + Math.random().toString(36).substr(2, 9)}`
   },
 });
 
